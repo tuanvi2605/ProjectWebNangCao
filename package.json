@@ -9,16 +9,24 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "mongoose": "^8.12.1",
+    "next": "15.2.2",
+    "next-swagger-doc": "^0.4.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "next": "15.2.2"
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-dist": "^5.20.1",
+    "swagger-ui-react": "^5.0.0-beta.0"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4"
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-dist": "^3.30.5",
+    "@types/swagger-ui-react": "^5.18.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }
