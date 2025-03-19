@@ -1,19 +1,21 @@
 import dbConnect from "../../../../../config/connection";
+import User from "../../../../../model/User";
+import mongoose from "mongoose";
 
 /**
  * @swagger
- * /api/v1/product/update:
+ * /api/v1/user/update:
  *   put:
  *     tags:
- *       - Product
- *     description: Update a product by ID
+ *       - User
+ *     description: Update a user by ID
  *     parameters:
  *       - in: query
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: The ID of the product to update
+ *         description: The ID of the user to update
  *     requestBody:
  *       required: true
  *       content:
@@ -21,55 +23,62 @@ import dbConnect from "../../../../../config/connection";
  *           schema:
  *             type: object
  *             properties:
- *               name:
+ *               username:
  *                 type: string
- *               description:
+ *               password:
  *                 type: string
- *               price:
- *                 type: number
- *               category:
+ *               phone:
  *                 type: string
- *               stock:
- *                 type: number
- *               images:
- *                 type: array
- *                 items:
- *                   type: string
+ *               email:
+ *                 type: string
  *     responses:
  *       200:
- *         description: Product updated successfully
+ *         description: User updated successfully
  *       400:
  *         description: Bad Request
  *       404:
- *         description: Product not found
+ *         description: User not found
  *       500:
  *         description: Internal Server Error
  */
-import Product from "../../../../../model/Product";
 
 export async function PUT(request) {
     try {
         await dbConnect();
-        const url = new URL(request.url);
+        const url = new URL(request.url, `http://localhost`);
         const id = url.searchParams.get("id");
         const body = await request.json();
 
-        if (!id) {
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
             return new Response(JSON.stringify({
                 success: false,
-                message: "Product ID is required"
+                message: "Invalid or missing User ID"
             }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' },
             });
         }
 
-        const updatedProduct = await Product.findByIdAndUpdate(id, body, { new: true });
-
-        if (!updatedProduct) {
+        // Kiểm tra nếu phone không phải là string
+        if (body.phone && typeof body.phone !== "string") {
             return new Response(JSON.stringify({
                 success: false,
-                message: "Product not found"
+                message: "Phone must be a string"
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(id, body, {
+            new: true,
+            runValidators: true
+        });
+
+        if (!updatedUser) {
+            return new Response(JSON.stringify({
+                success: false,
+                message: "User not found"
             }), {
                 status: 404,
                 headers: { 'Content-Type': 'application/json' },
@@ -78,8 +87,8 @@ export async function PUT(request) {
 
         return new Response(JSON.stringify({
             success: true,
-            message: "Product updated successfully",
-            data: updatedProduct
+            message: "User updated successfully",
+            data: updatedUser
         }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
@@ -87,7 +96,7 @@ export async function PUT(request) {
     } catch (error) {
         return new Response(JSON.stringify({
             success: false,
-            message: "Error updating product",
+            message: "Error updating user",
             error: error.message
         }), {
             status: 500,

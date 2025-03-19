@@ -1,3 +1,5 @@
+import dbConnect from "../../../../../config/connection";
+
 /**
  * @swagger
  * /api/v1/product/find:
@@ -26,6 +28,7 @@ import Product from "../../../../../model/Product";
 
 export async function GET(request) {
     try {
+        await dbConnect();
         const url = new URL(request.url);
         const id = url.searchParams.get("id");
 

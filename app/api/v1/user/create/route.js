@@ -1,13 +1,13 @@
 import dbConnect from "../../../../../config/connection";
-
+import User from "../../../../../model/User";
 
 /**
  * @swagger
- * /api/v1/product/create:
+ * /api/v1/user/create:
  *   post:
  *     tags:
- *       - Product
- *     description: Create a new product
+ *       - User
+ *     description: Create a new user
  *     requestBody:
  *       required: true
  *       content:
@@ -15,73 +15,70 @@ import dbConnect from "../../../../../config/connection";
  *           schema:
  *             type: object
  *             required:
- *               - name
- *               - price
+ *               - username
+ *               - password
+ *               - phone
+ *               - email
  *             properties:
- *               name:
+ *               username:
  *                 type: string
- *               description:
+ *               password:
  *                 type: string
- *               price:
- *                 type: number
- *               category:
+ *               phone:
+ *                 type: string  # ✅ Chỉnh phone thành string
+ *               email:
  *                 type: string
- *               stock:
- *                 type: number
- *                 default: 0
- *               images:
- *                 type: array
- *                 items:
- *                   type: string
  *     responses:
  *       201:
- *         description: Product created successfully
+ *         description: User created successfully
  *       400:
  *         description: Bad Request
  *       500:
  *         description: Internal Server Error
  */
-import Product from "../../../../../model/Product";
 
 export async function POST(request) {
     try {
         await dbConnect();
         const body = await request.json();
-        const { name, description, price, category, stock, images } = body;
 
-        if (!name || !price) {
+        // Lấy dữ liệu từ request
+        const { username, password, phone, email } = body;
+
+        // Kiểm tra bắt buộc
+        if (!username || !password || !phone || !email) {
             return new Response(JSON.stringify({
                 success: false,
-                message: "Name and price are required"
+                message: "Username, password, phone, and email are required"
             }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' },
             });
         }
 
-        const newProduct = new Product({
-            name,
-            description,
-            price,
-            category,
-            stock: stock || 0,
-            images: images || []
+        // Tạo user mới
+        const newUser = new User({
+            username,
+            password,
+            phone: String(phone),  // ✅ Chuyển phone sang string để tránh lỗi
+            email
         });
 
-        await newProduct.save();
+        await newUser.save();
 
         return new Response(JSON.stringify({
             success: true,
-            message: "Product created successfully",
-            data: newProduct
+            message: "User created successfully",
+            data: newUser
         }), {
             status: 201,
             headers: { 'Content-Type': 'application/json' },
         });
+
     } catch (error) {
         return new Response(JSON.stringify({
             success: false,
-            message: "Error creating product",
+            message: "Error creating user",
             error: error.message
         }), {
             status: 500,

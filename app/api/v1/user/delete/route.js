@@ -1,75 +1,59 @@
 import dbConnect from "../../../../../config/connection";
+import User from "../../../../../model/User";
+import mongoose from "mongoose";
 
 /**
  * @swagger
- * /api/v1/product/update:
- *   put:
+ * /api/v1/user/delete:
+ *   delete:
  *     tags:
- *       - Product
- *     description: Update a product by ID
- *     parameters:
- *       - in: query
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: The ID of the product to update
+ *       - User
+ *     description: Delete a user by ID
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - id
  *             properties:
- *               name:
+ *               id:
  *                 type: string
- *               description:
- *                 type: string
- *               price:
- *                 type: number
- *               category:
- *                 type: string
- *               stock:
- *                 type: number
- *               images:
- *                 type: array
- *                 items:
- *                   type: string
+ *                 description: The ID of the user to delete
  *     responses:
  *       200:
- *         description: Product updated successfully
+ *         description: User deleted successfully
  *       400:
  *         description: Bad Request
  *       404:
- *         description: Product not found
+ *         description: User not found
  *       500:
  *         description: Internal Server Error
  */
-import Product from "../../../../../model/Product";
 
-export async function PUT(request) {
+export async function DELETE(request) {
     try {
         await dbConnect();
-        const url = new URL(request.url);
-        const id = url.searchParams.get("id");
         const body = await request.json();
+        const { id } = body;
 
-        if (!id) {
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
             return new Response(JSON.stringify({
                 success: false,
-                message: "Product ID is required"
+                message: "Invalid or missing User ID"
             }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' },
             });
         }
 
-        const updatedProduct = await Product.findByIdAndUpdate(id, body, { new: true });
+        const deletedUser = await User.findByIdAndDelete(id);
 
-        if (!updatedProduct) {
+        if (!deletedUser) {
             return new Response(JSON.stringify({
                 success: false,
-                message: "Product not found"
+                message: "User not found"
             }), {
                 status: 404,
                 headers: { 'Content-Type': 'application/json' },
@@ -78,8 +62,7 @@ export async function PUT(request) {
 
         return new Response(JSON.stringify({
             success: true,
-            message: "Product updated successfully",
-            data: updatedProduct
+            message: "User deleted successfully"
         }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
@@ -87,7 +70,7 @@ export async function PUT(request) {
     } catch (error) {
         return new Response(JSON.stringify({
             success: false,
-            message: "Error updating product",
+            message: "Error deleting user",
             error: error.message
         }), {
             status: 500,

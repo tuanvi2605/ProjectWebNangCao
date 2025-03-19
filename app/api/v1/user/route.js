@@ -1,12 +1,13 @@
 import dbConnect from "../../../../config/connection";
+await dbConnect();
 
 /**
  * @swagger
- * /api/v1/product:
+ * /api/v1/user:
  *   get:
  *     tags:
- *       - Product
- *     description: Returns the product list
+ *       - User
+ *     description: Returns the User list
  *     parameters:
  *       - name: page
  *         in: query
@@ -30,11 +31,10 @@ import dbConnect from "../../../../config/connection";
  *       500:
  *         description: Internal Server Error
  */
-import Product from "../../../../model/Product";
+import User from "../../../../model/User";
 
 export async function GET(request) {
     try {
-        await dbConnect();
         // Lấy query parameters từ request
         const url = new URL(request.url);
         const page = parseInt(url.searchParams.get("page")) || 1;
@@ -42,12 +42,12 @@ export async function GET(request) {
         const skip = (page - 1) * limit;
 
         // Lấy danh sách sản phẩm từ MongoDB
-        const products = await Product.find().skip(skip).limit(limit);
-        const total = await Product.countDocuments();
+        const users = await User.find().skip(skip).limit(limit);
+        const total = await User.countDocuments();
 
         return new Response(JSON.stringify({
             success: true,
-            data: products,
+            data: users,
             pagination: {
                 total,
                 page,

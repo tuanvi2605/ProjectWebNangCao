@@ -1,53 +1,54 @@
 import dbConnect from "../../../../../config/connection";
+import User from "../../../../../model/User";
+import mongoose from "mongoose";
 
 /**
  * @swagger
- * /api/v1/product/delete:
- *   delete:
+ * /api/v1/user/find:
+ *   get:
  *     tags:
- *       - Product
- *     description: Delete a product by ID
+ *       - User
+ *     description: Find a user by ID
  *     parameters:
  *       - in: query
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: The ID of the product to delete
+ *         description: The ID of the user to find
  *     responses:
  *       200:
- *         description: Product deleted successfully
+ *         description: User found successfully
  *       400:
  *         description: Bad Request
  *       404:
- *         description: Product not found
+ *         description: User not found
  *       500:
  *         description: Internal Server Error
  */
-import Product from "../../../../../model/Product";
 
-export async function DELETE(request) {
+export async function GET(request) {
     try {
         await dbConnect();
-        const url = new URL(request.url);
+        const url = new URL(request.url, `http://localhost`); // Đảm bảo lấy URL chính xác
         const id = url.searchParams.get("id");
 
-        if (!id) {
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
             return new Response(JSON.stringify({
                 success: false,
-                message: "Product ID is required"
+                message: "Invalid or missing User ID"
             }), {
                 status: 400,
                 headers: { 'Content-Type': 'application/json' },
             });
         }
 
-        const deletedProduct = await Product.findByIdAndDelete(id);
+        const user = await User.findById(id);
 
-        if (!deletedProduct) {
+        if (!user) {
             return new Response(JSON.stringify({
                 success: false,
-                message: "Product not found"
+                message: "User not found"
             }), {
                 status: 404,
                 headers: { 'Content-Type': 'application/json' },
@@ -56,7 +57,7 @@ export async function DELETE(request) {
 
         return new Response(JSON.stringify({
             success: true,
-            message: "Product deleted successfully"
+            data: user
         }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
@@ -64,7 +65,7 @@ export async function DELETE(request) {
     } catch (error) {
         return new Response(JSON.stringify({
             success: false,
-            message: "Error deleting product",
+            message: "Error finding user",
             error: error.message
         }), {
             status: 500,
